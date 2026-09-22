@@ -41,6 +41,12 @@ func NewRootCmd() *cobra.Command {
 		Version: "1.0.0",
 		Short:   fmt.Sprintf("%s - Kafka producer and consumer tool in protobuf format", appName),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) (err error) {
+			// The relay command speaks its own fixed-frame TCP
+			// protocol and never touches Kafka.
+			if cmd.Name() == "relay" {
+				return nil
+			}
+
 			configFiles, err := initConfig()
 			if err != nil {
 				if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
@@ -86,6 +92,7 @@ func NewRootCmd() *cobra.Command {
 		NewConsumeCmd(),
 		NewListCmd(),
 		NewBuildCmd(),
+		NewRelayCmd(),
 	)
 
 	return cmd
